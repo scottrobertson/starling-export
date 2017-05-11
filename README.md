@@ -12,4 +12,4 @@ ruby starling-export.rb csv --personal_token=#{personal_token}
 
 ### personal_token
 
-@todo instructions
+Get a token from here https://developer.starlingbank.com/token/list
