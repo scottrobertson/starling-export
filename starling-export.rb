@@ -42,7 +42,7 @@ command :qif do |c|
           date: DateTime.parse(transaction['created']).to_date,
           amount: transaction['amount'],
           memo: nil,
-          payee: nil
+          payee: transaction['narrative']
         )
       end
     end
@@ -58,15 +58,15 @@ command :csv do |c|
   c.option '--directory STRING', String, 'The directory to save this file'
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
-
     options.default directory: "#{File.dirname(__FILE__)}/tmp"
     path = "#{options.directory}/starling-#{Time.now.to_i}.csv"
 
     CSV.open(path, "wb") do |csv|
-      csv << [:date, :amount, :balance]
+      csv << [:date, :description, :amount, :balance]
       transactions(options.access_token).reverse.each_with_index do |transaction, index|
         csv << [
           DateTime.parse(transaction['created']).strftime("%d/%m/%y"),
+          transaction['narrative'],
           transaction['amount'],
           transaction['balance']
         ]
