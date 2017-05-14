@@ -16,17 +16,6 @@ program :name, 'starling-export'
 program :version, Starling::Export::VERSION
 program :description, 'Generate QIF or CSV from Starling'
 
-def perform_request(path, access_token)
-  url = "https://api.starlingbank.com/api/v1#{path}"
-
-  @_requests ||= {}
-  @_requests[path] ||= JSON.parse(RestClient.get(url, {:Authorization => "Bearer #{access_token}"}))
-end
-
-def transactions(access_token)
-  perform_request("/transactions", access_token)['_embedded']['transactions']
-end
-
 command :qif do |c|
   c.syntax = 'starling-export qif [options]'
   c.summary = ''
@@ -74,6 +63,14 @@ command :csv do |c|
     end
 
     puts "Wrote to #{path}"
-
   end
+end
+
+def perform_request(path, access_token)
+  url = "https://api.starlingbank.com/api/v1#{path}"
+  JSON.parse(RestClient.get(url, {:Authorization => "Bearer #{access_token}"}))
+end
+
+def transactions(access_token)
+  perform_request("/transactions", access_token)['_embedded']['transactions']
 end
