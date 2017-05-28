@@ -24,7 +24,7 @@ command :qif do |c|
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
     options.default directory: "#{File.dirname(__FILE__)}/tmp"
-    path = "#{options.directory}/starling-#{Time.now.to_i}.qif"
+    path = "#{options.directory}/starling.qif"
     Qif::Writer.open(path, type = 'Bank', format = 'dd/mm/yyyy') do |qif|
       transactions(options.access_token).each do |transaction|
         qif << Qif::Transaction.new(
@@ -36,6 +36,7 @@ command :qif do |c|
       end
     end
 
+    puts "Balance: £#{balance(options.access_token)}"
     puts "Wrote to #{path}"
   end
 end
@@ -48,7 +49,7 @@ command :csv do |c|
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
     options.default directory: "#{File.dirname(__FILE__)}/tmp"
-    path = "#{options.directory}/starling-#{Time.now.to_i}.csv"
+    path = "#{options.directory}/starling.csv"
 
     CSV.open(path, "wb") do |csv|
       csv << [:date, :description, :amount, :balance]
@@ -62,6 +63,7 @@ command :csv do |c|
       end
     end
 
+    puts "Balance: £#{balance(options.access_token)}"
     puts "Wrote to #{path}"
   end
 end
@@ -73,4 +75,8 @@ end
 
 def transactions(access_token)
   perform_request("/transactions", access_token)['_embedded']['transactions']
+end
+
+def balance(access_token)
+  perform_request("/accounts/balance", access_token)['availableToSpend']
 end
