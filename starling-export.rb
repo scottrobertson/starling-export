@@ -68,6 +68,18 @@ command :csv do |c|
   end
 end
 
+command :balance do |c|
+  c.syntax = 'starling-export balance [options]'
+  c.summary = ''
+  c.option '--access_token STRING', String, 'The access_token from Starling'
+  c.action do |args, options|
+    account_data = account(options.access_token)
+    puts "Account Number: #{account_data['accountNumber']}"
+    puts "Sort Code: #{account_data['sortCode']}"
+    puts "Balance: £#{balance(options.access_token)}"
+  end
+end
+
 def perform_request(path, access_token)
   url = "https://api.starlingbank.com/api/v1#{path}"
   JSON.parse(RestClient.get(url, {:Authorization => "Bearer #{access_token}"}))
@@ -79,4 +91,8 @@ end
 
 def balance(access_token)
   perform_request("/accounts/balance", access_token)['availableToSpend']
+end
+
+def account(access_token)
+  perform_request("/accounts", access_token)
 end
