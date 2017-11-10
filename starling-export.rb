@@ -10,6 +10,7 @@ require 'json'
 require 'csv'
 require 'yaml'
 require 'qif'
+require 'colorize'
 require 'starling/export/version'
 
 program :name, 'starling-export'
@@ -53,7 +54,17 @@ command :csv do |c|
 
     CSV.open(path, "wb") do |csv|
       csv << [:date, :description, :amount, :balance]
-      transactions(options.access_token).reverse.each_with_index do |transaction, index|
+
+      all_transactions = transactions(options.access_token)
+      total_count = all_transactions.size
+
+      all_transactions.reverse.each_with_index do |transaction, index|
+
+        amount = (transaction['amount'].to_f).abs.to_s.ljust(6, ' ')
+        amount_with_color = transaction['amount'] > 0 ? amount.green : amount.red
+
+        puts "[#{(index + 1).to_s.rjust(total_count.to_s.length) }/#{total_count}] #{Date.parse(transaction['created']).to_s} - #{transaction['id']} - #{amount_with_color}  "
+
         csv << [
           DateTime.parse(transaction['created']).strftime("%d/%m/%y"),
           transaction['narrative'],

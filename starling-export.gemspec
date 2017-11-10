@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "commander"
   spec.add_dependency "qif"
   spec.add_dependency "rest-client"
+  spec.add_dependency "colorize"
 end
