@@ -36,8 +36,7 @@ command :qif do |c|
         )
       end
     end
-
-    puts "Balance: £#{balance(options.access_token)}"
+    
     puts "Wrote to #{path}"
   end
 end
@@ -74,7 +73,6 @@ command :csv do |c|
       end
     end
 
-    puts "Balance: £#{balance(options.access_token)}"
     puts "Wrote to #{path}"
   end
 end
