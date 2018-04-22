@@ -27,7 +27,16 @@ command :qif do |c|
     options.default directory: "#{File.dirname(__FILE__)}/tmp"
     path = "#{options.directory}/starling.qif"
     Qif::Writer.open(path, type = 'Bank', format = 'dd/mm/yyyy') do |qif|
-      transactions(options.access_token).each do |transaction|
+
+      all_transactions = transactions(options.access_token)
+      total_count = all_transactions.size
+
+      all_transactions.reverse.each_with_index do |transaction, index|
+        amount = (transaction['amount'].to_f).abs.to_s.ljust(6, ' ')
+        amount_with_color = transaction['amount'] > 0 ? amount.green : amount.red
+
+        puts "[#{(index + 1).to_s.rjust(total_count.to_s.length) }/#{total_count}] #{Date.parse(transaction['created']).to_s} - #{transaction['id']} - #{amount_with_color}  "
+
         qif << Qif::Transaction.new(
           date: DateTime.parse(transaction['created']).to_date,
           amount: transaction['amount'],
@@ -36,8 +45,9 @@ command :qif do |c|
         )
       end
     end
-    
-    puts "Wrote to #{path}"
+
+    puts ""
+    puts "Exported to #{path}"
   end
 end
 
@@ -73,7 +83,8 @@ command :csv do |c|
       end
     end
 
-    puts "Wrote to #{path}"
+    puts ""
+    puts "Exported to #{path}"
   end
 end
 
