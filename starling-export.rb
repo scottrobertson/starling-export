@@ -32,16 +32,21 @@ command :qif do |c|
       total_count = all_transactions.size
 
       all_transactions.reverse.each_with_index do |transaction, index|
-        amount = (transaction['amount'].to_f).abs.to_s.ljust(6, ' ')
-        amount_with_color = transaction['amount'] > 0 ? amount.green : amount.red
 
-        puts "[#{(index + 1).to_s.rjust(total_count.to_s.length) }/#{total_count}] #{Date.parse(transaction['created']).to_s} - #{transaction['id']} - #{amount_with_color}  "
+        next if transaction['amount']['minorUnits'] == 0
+
+        payee = transaction['counterPartyName'] || 'Unknown Payee'
+
+        amount = (transaction['amount']['minorUnits'].to_f / 100).abs.to_s.ljust(6, ' ')
+        amount_with_color = transaction['amount']['minorUnits'] > 0 ? amount.green : amount.red
+
+        puts "[#{(index + 1).to_s.rjust(total_count.to_s.length) }/#{total_count}] #{Date.parse(transaction['transactionTime']).to_s} - #{transaction['feedItemUid']} - #{amount_with_color} - #{payee}"
 
         qif << Qif::Transaction.new(
-          date: DateTime.parse(transaction['created']).to_date,
-          amount: transaction['amount'],
+          date: DateTime.parse(transaction['transactionTime']).to_date,
+          amount: transaction['amount']['minorUnits'].to_f / 100,
           memo: nil,
-          payee: transaction['narrative']
+          payee: transaction['payee']
         )
       end
     end
