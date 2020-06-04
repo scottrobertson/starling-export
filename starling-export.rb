@@ -65,20 +65,23 @@ command :csv do |c|
       csv << [:date, :description, :amount, :balance]
 
       all_transactions = transactions(options.access_token)
+
       total_count = all_transactions.size
 
       all_transactions.reverse.each_with_index do |transaction, index|
+        next if transaction['amount']['minorUnits'] == 0
 
-        amount = (transaction['amount'].to_f).abs.to_s.ljust(6, ' ')
-        amount_with_color = transaction['amount'] > 0 ? amount.green : amount.red
+        payee = transaction['counterPartyName'] || 'Unknown Payee'
 
-        puts "[#{(index + 1).to_s.rjust(total_count.to_s.length) }/#{total_count}] #{Date.parse(transaction['created']).to_s} - #{transaction['id']} - #{amount_with_color}  "
+        amount = (transaction['amount']['minorUnits'].to_f / 100).abs.to_s.ljust(6, ' ')
+        amount_with_color = transaction['amount']['minorUnits'] > 0 ? amount.green : amount.red
+
+        puts "[#{(index + 1).to_s.rjust(total_count.to_s.length) }/#{total_count}] #{Date.parse(transaction['transactionTime']).to_s} - #{transaction['feedItemUid']} - #{amount_with_color} - #{payee}"
 
         csv << [
-          DateTime.parse(transaction['created']).strftime("%d/%m/%y"),
-          transaction['narrative'],
-          transaction['amount'],
-          transaction['balance']
+          DateTime.parse(transaction['transactionTime']).strftime("%d/%m/%y"),
+          payee,
+          transaction['amount']['minorUnits'].to_f / 100,
         ]
       end
     end
@@ -101,12 +104,13 @@ command :balance do |c|
 end
 
 def perform_request(path, access_token)
-  url = "https://api.starlingbank.com/api/v1#{path}"
+  url = "https://api.starlingbank.com/api/v2#{path}"
   JSON.parse(RestClient.get(url, {:Authorization => "Bearer #{access_token}"}))
 end
 
 def transactions(access_token)
-  perform_request("/transactions", access_token)['_embedded']['transactions']
+  account = account(access_token)
+  perform_request("/feed/account/#{account['accountUid']}/category/#{account['defaultCategory']}?changesSince=2015-01-01T00:00:00.000Z", access_token)['feedItems']
 end
 
 def balance(access_token)
@@ -114,5 +118,5 @@ def balance(access_token)
 end
 
 def account(access_token)
-  perform_request("/accounts", access_token)
+  perform_request("/accounts", access_token)['accounts'].first
 end
