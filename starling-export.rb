@@ -97,9 +97,12 @@ command :balance do |c|
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
     account_data = account(options.access_token)
-    puts "Account Number: #{account_data['accountNumber']}"
-    puts "Sort Code: #{account_data['sortCode']}"
-    puts "Balance: £#{balance(options.access_token)}"
+    account_info = account_info(options.access_token, account_data['accountUid'])
+    balance_data = balance(options.access_token, account_data['accountUid'])
+
+    puts "Account Number: #{account_info['accountIdentifier']}"
+    puts "Sort Code: #{account_info['bankIdentifier']}"
+    puts "Balance: £#{balance_data['amount']['minorUnits'].to_f / 100}"
   end
 end
 
@@ -113,8 +116,12 @@ def transactions(access_token)
   perform_request("/feed/account/#{account['accountUid']}/category/#{account['defaultCategory']}?changesSince=2015-01-01T00:00:00.000Z", access_token)['feedItems']
 end
 
-def balance(access_token)
-  perform_request("/accounts/balance", access_token)['availableToSpend']
+def balance(access_token, account_id)
+  perform_request("/accounts/#{account_id}/balance", access_token)
+end
+
+def account_info(access_token, account_id)
+  perform_request("/accounts/#{account_id}/identifiers", access_token)
 end
 
 def account(access_token)
