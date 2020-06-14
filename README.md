@@ -12,4 +12,12 @@ ruby starling-export.rb csv --access_token=#{access_token}
 
 ### access_token
 
-Get a token from here https://developer.starlingbank.com/token/list
+You will need to get a token from [here][token_req], with the
+following scopes:
+
+- `account_read`
+- `account-identifier:read`
+- `balance:read`
+- `transaction:read`
+
+[token_req]: https://developer.starlingbank.com/token/list
