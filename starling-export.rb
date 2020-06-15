@@ -24,7 +24,10 @@ command :qif do |c|
   c.option '--directory STRING', String, 'The directory to save this file'
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
-    options.default directory: "#{File.dirname(__FILE__)}/tmp"
+    options.default \
+      directory: "#{File.dirname(__FILE__)}/tmp",
+      access_token: ENV["STARLING_ACCESS_TOKEN"]
+
     path = "#{options.directory}/starling.qif"
     Qif::Writer.open(path, type = 'Bank', format = 'dd/mm/yyyy') do |qif|
 
@@ -63,7 +66,10 @@ command :csv do |c|
   c.option '--directory STRING', String, 'The directory to save this file'
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
-    options.default directory: "#{File.dirname(__FILE__)}/tmp"
+    options.default \
+      directory: "#{File.dirname(__FILE__)}/tmp",
+      access_token: ENV["STARLING_ACCESS_TOKEN"]
+
     path = "#{options.directory}/starling.csv"
 
     CSV.open(path, "wb") do |csv|
@@ -101,6 +107,9 @@ command :balance do |c|
   c.summary = ''
   c.option '--access_token STRING', String, 'The access_token from Starling'
   c.action do |args, options|
+    options.default \
+      access_token: ENV["STARLING_ACCESS_TOKEN"]
+
     account_data = account(options.access_token)
     account_info = account_info(options.access_token, account_data['accountUid'])
     balance_data = balance(options.access_token, account_data['accountUid'])
